@@ -1,8 +1,13 @@
 cn/chenqwwq/target/Hotswap.class
 cn/chenqwwq/ClassFileWatchDog$ScheduledExecutor$1.class
-cn/chenqwwq/Main.class
-cn/chenqwwq/ClassFileWatchDog.class
+cn/chenqwwq/TYest$Main.class
 cn/chenqwwq/target/HotswapDemo.class
 cn/chenqwwq/HotSwapClassLoader.class
+cn/chenqwwq/Trigger.class
+cn/chenqwwq/TYest$A.class
+cn/chenqwwq/Main.class
+cn/chenqwwq/Invocation.class
+cn/chenqwwq/ClassFileWatchDog.class
 cn/chenqwwq/ClassFileWatchDog$WatchTask.class
 cn/chenqwwq/ClassFileWatchDog$ScheduledExecutor.class
+cn/chenqwwq/TYest.class

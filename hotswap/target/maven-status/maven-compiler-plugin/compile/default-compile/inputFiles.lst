@@ -1,5 +1,8 @@
 /home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/Main.java
 /home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/ClassFileWatchDog.java
+/home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/Trigger.java
+/home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/TYest.java
+/home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/Invocation.java
 /home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/target/Hotswap.java
 /home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/target/HotswapDemo.java
 /home/chen/github/incubator/hotswap/src/main/java/cn/chenqwwq/HotSwapClassLoader.java
