@@ -12,10 +12,10 @@ import java.util.*;
  * @author chen
  * @date 2021/9/25
  **/
-public class LFU_PriorityQueue<K, V> implements CustomCache<K, V> {
+public class LFU_PriorityQueue implements CustomCache {
 
-	private PriorityQueue<FreqNode<K, V>> freqNodes;
-	private Map<K, FreqNode<K, V>> cache;
+	private PriorityQueue<FreqNode> freqNodes;
+	private Map<Integer, FreqNode> cache;
 	private final int capacity;
 
 	public LFU_PriorityQueue(int capacity) {
@@ -27,10 +27,11 @@ public class LFU_PriorityQueue<K, V> implements CustomCache<K, V> {
 		cache = new HashMap<>();
 	}
 
-	public V get(K k) {
-		final FreqNode<K, V> node = cache.get(k);
+	@Override
+	public int get(int k) {
+		final FreqNode node = cache.get(k);
 		if (Objects.isNull(node)) {
-			return null;
+			return -1;
 		}
 		freqNodes.remove(node);
 		node.freq++;
@@ -44,16 +45,16 @@ public class LFU_PriorityQueue<K, V> implements CustomCache<K, V> {
 	}
 
 	@Override
-	public void put(K k, V v) {
-		final FreqNode<K, V> node = cache.get(k);
+	public void put(int k, int v) {
+		final FreqNode node = cache.get(k);
 		if (Objects.isNull(node)) {
 			if (capacity == cache.size()) {
-				final FreqNode<K, V> del = freqNodes.poll();
+				final FreqNode del = freqNodes.poll();
 				if (Objects.nonNull(del)) {
 					cache.remove(del.k);
 				}
 			}
-			final FreqNode<K, V> value = new FreqNode<>(1, k, v);
+			final FreqNode value = new FreqNode(1, k, v);
 			cache.put(k, value);
 			freqNodes.offer(value);
 			return;

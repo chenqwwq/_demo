@@ -2,9 +2,29 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="xh-snapshots" />
+      <option name="name" value="xh-snapshots" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/repositories/sonatype-nexus-backend-snapshots/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="http://maven.aliyun.com/nexus/content/groups/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="xh-releases" />
+      <option name="name" value="xh-releases" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/repositories/sonatype-nexus-backend-release/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="spring-releases" />
+      <option name="name" value="spring-releases" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/groups/backend-public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="central" />
+      <option name="name" value="Central Repository" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/groups/backend-public/" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
@@ -15,6 +35,26 @@
       <option name="id" value="jboss.community" />
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus-snapshots" />
+      <option name="name" value="nexus-snapshots" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/repositories/backend-snapshots/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus-milestones" />
+      <option name="name" value="nexus-milestones" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/repositories/spring-milestones/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus-releases" />
+      <option name="name" value="nexus-releases" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/repositories/backend-center/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="spring-snapshots" />
+      <option name="name" value="spring-snapshots" />
+      <option name="url" value="http://repo.100fen.cn:8081/nexus/content/groups/backend-snapshots/" />
     </remote-repository>
   </component>
 </project>

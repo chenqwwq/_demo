@@ -11,49 +11,43 @@ import java.util.*;
  * v    |
  * ValueNode
  * <p>
- * TODO: 简单测试
+ * TODO: 中间无用节点可以去除
  *
  * @author chen
  * @date 2021/9/25
  **/
-public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
+public class LFU_CustomLinked implements CustomCache {
 
 	/**
 	 * 初始頻率
 	 */
-	private static final int INITIAL_FREQ = 1;
+	private static final int INITIAL_FREQ = 0;
 
 	// inner class
 
 	/**
 	 * {@link cache.CustomCache.FreqNode} 表示频率的单向链表，每个节点表示一个频率
 	 * 每个 {@link cache.CustomCache.FreqNode} 都会持有一个 {@link ValueNode} 为节点的双向链表
-	 *
-	 * @param <K> Key
-	 * @param <V> Value
 	 */
-	private static class FreqNode<K, V> {
-		FreqNode<K, V> prev;
-		FreqNode<K, V> next;
+	private static class FreqNode {
 		final int freq;
 		int size;
 
-		final ValueNode<K, V> head;
-		ValueNode<K, V> end;
+		FreqNode prev;
+		FreqNode next;
+
+		ValueNode head;
+		ValueNode end;
 
 		public FreqNode() {
 			freq = INITIAL_FREQ;
-			// 哨兵
-			head = end = new ValueNode<>();
 		}
 
-		public FreqNode(FreqNode<K, V> next, FreqNode<K, V> prev, int freq) {
+		public FreqNode(FreqNode next, FreqNode prev, int freq) {
 			this.next = next;
 			this.prev = prev;
 			this.freq = freq;
 			size = 0;
-			// 哨兵
-			head = end = new ValueNode<>();
 		}
 
 		/**
@@ -61,24 +55,25 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 		 *
 		 * @param node {@link ValueNode}
 		 */
-		public void addChildLast(ValueNode<K, V> node) {
+		public void addChildLast(ValueNode node) {
+			this.size++;
+			node.freq = this;
+			if (head == null) {
+				head = end = node;
+				return;
+			}
 			end.next = node;
 			node.prev = end;
 			end = node;
-			this.size++;
-			node.freq = this;
 		}
 
-		public ValueNode<K, V> removeChildFirst() {
-			final ValueNode<K, V> next = head.next;
-			if (Objects.isNull(next)) {
-				return Objects.isNull(this.next)
-						? this.next.removeChildFirst()
-						: null;
+		public ValueNode removeChildFirst() {
+			if (head != null) {
+				ValueNode node = head;
+				delete(node);
+				return node;
 			}
-
-			next.deleteSelf();
-			return next;
+			return next != null ? next.removeChildFirst() : null;
 		}
 
 		/**
@@ -86,11 +81,11 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 		 *
 		 * @return 新增的頻率節點
 		 */
-		public FreqNode<K, V> addNextFreq() {
+		public FreqNode addNextFreq() {
 			if (this.next != null && this.next.freq == this.freq + 1) {
 				return this.next;
 			}
-			final FreqNode<K, V> newFreq = new FreqNode<K, V>(this.next, this, freq + 1);
+			final FreqNode newFreq = new FreqNode(this.next, this, freq + 1);
 			if (Objects.nonNull(this.next)) {
 				this.next.prev = newFreq;
 			}
@@ -99,80 +94,71 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 		}
 
 		/**
-		 * 遞減 size，如果 size == 0，需要刪除自身
+		 * 删除自身
 		 */
-		public void decreasing() {
+		public void delete(ValueNode node) {
 			this.size--;
-			if (this.size != 0 || this.prev == null) {
-				return;
+			if (head == node && end == node) {
+				head = end = null;
+			} else if (head == node) {
+				head = node.next;
+				head.prev = null;
+			} else if (end == node) {
+				end = node.prev;
+				end.next = null;
+			} else {
+				node.next.prev = node.prev;
+				node.prev.next = node.next;
 			}
-			this.prev.next = this.next;
-			this.next.prev = this.prev;
+			node.prev = node.next = null;
 		}
 	}
 
 	/**
 	 * 存储在 {@link Map} 和 {@link cache.CustomCache.FreqNode} 的数据包装节点
-	 *
-	 * @param <K> Key
-	 * @param <V> Value
 	 */
-	private static class ValueNode<K, V> {
-		ValueNode<K, V> next;
-		ValueNode<K, V> prev;
-		FreqNode<K, V> freq;
+	private static class ValueNode {
+		ValueNode next;
+		ValueNode prev;
+		FreqNode freq;
 
-		K key;
-		V val;
+		int key;
+		int val;
 
 		public ValueNode() {
 		}
 
-		public ValueNode(K key, V val) {
+		public ValueNode(int key, int val) {
 			this.key = key;
 			this.val = val;
 		}
 
-		/**
-		 * 删除自身
-		 */
-		public void deleteSelf() {
-			this.freq.decreasing();
-			if (this.next == null) {
-				this.prev.next = null;
-				return;
-			}
-			this.prev.next = this.next;
-			this.next.prev = this.prev;
-		}
-
-
 	}
 
-	private Map<K, ValueNode<K, V>> cache;
+	private Map<java.lang.Integer, ValueNode> cache;
 	private int capacity;
-	private FreqNode<K, V> head;
+	private FreqNode head;
 
 	// construction
 
 	public LFU_CustomLinked(int capacity) {
-		if (capacity <= 0) {
+		if (capacity < 0) {
 			throw new IllegalArgumentException("capacity must be positive");
 		}
 		this.capacity = capacity;
 		this.cache = new HashMap<>();
-		// 哨兵
-		this.head = new FreqNode<>();
+		// 哨兵,始终保持初始访问频率的节点
+		this.head = new FreqNode();
 	}
 
 
 	// method
 
 	@Override
-	public V get(K k) {
-		final ValueNode<K, V> value = cache.get(k);
+	public int get(int k) {
+		final ValueNode value = cache.get(k);
 		if (Objects.isNull(value)) {
-			return null;
+			return -1;
 		}
 		access(value);
 		return value.val;
@@ -183,15 +169,13 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 	 *
 	 * @param value 需要改变的节点
 	 */
-	private void access(ValueNode<K, V> value) {
-		// 当前的频率节点
-		final FreqNode<K, V> freq = value.freq;
-		// 没有后续频率节点,或者频率节点的频数不对
-		if (freq.next != null && freq.next.freq != freq.freq + 1) {
+	private void access(ValueNode value) {
+		final FreqNode freq = value.freq;
+		freq.delete(value);
+		if (freq.next != null && freq.next.freq == freq.freq + 1) {
 			freq.next.addChildLast(value);
 		} else {
-			final FreqNode<K, V> newFreq = freq.addNextFreq();
-			value.deleteSelf();
+			final FreqNode newFreq = freq.addNextFreq();
 			newFreq.addChildLast(value);
 		}
 	}
@@ -203,18 +187,21 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 	}
 
 	@Override
-	public void put(K k, V v) {
-		final ValueNode<K, V> val = cache.get(k);
+	public void put(int k, int v) {
+		if (capacity == 0) {
+			return;
+		}
+		final ValueNode val = cache.get(k);
 		if (Objects.isNull(val)) {
-			final ValueNode<K, V> newNode = new ValueNode<>(k, v);
-			head.addChildLast(newNode);
+			final ValueNode newNode = new ValueNode(k, v);
 			while (size() >= capacity) {
-				final ValueNode<K, V> valueNode = head.removeChildFirst();
+				final ValueNode valueNode = head.removeChildFirst();
 				if (Objects.isNull(valueNode)) {
 					break;
 				}
 				cache.remove(valueNode.key);
 			}
+			head.addChildLast(newNode);
 			cache.put(k, newNode);
 			return;
 		}
@@ -222,11 +209,11 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 		access(val);
 	}
 
-	public List<K> asKeyList() {
-		List<K> ans = new ArrayList<>(capacity);
-		FreqNode<K, V> freqNode = head;
+	public List<Integer> asKeyList() {
+		List<Integer> ans = new ArrayList<>(capacity);
+		FreqNode freqNode = head;
 		while (freqNode != null) {
-			ValueNode<K, V> node = freqNode.head;
+			ValueNode node = freqNode.head;
 			while (node.next != null) {
 				node = node.next;
 				ans.add(node.key);
@@ -234,6 +221,6 @@ public class LFU_CustomLinked<K, V> implements CustomCache<K, V> {
 			freqNode = freqNode.next;
 		}
 		return ans;
-	}
+		}
 
 }

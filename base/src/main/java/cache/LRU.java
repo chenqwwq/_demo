@@ -1,5 +1,7 @@
 package cache;
 
+import org.checkerframework.checker.units.qual.K;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -14,13 +16,13 @@ import java.util.Map;
  * @author chen
  * @date 2021/9/13
  **/
-public class LRU<K, V> implements CustomCache<K, V> {
+public class LRU implements CustomCache {
 
-	private LinkedHashMap<K, V> cache;
+	private LinkedHashMap<Integer, Integer> cache;
 
 	public LRU(int capacity) {
 		this.capacity = capacity;
-		cache = new LinkedHashMap<K, V>(capacity) {
+		cache = new LinkedHashMap<Integer,Integer>(capacity) {
 			/**
 			 * 是否需要删除最老的对象
 			 * {@link LinkedHashMap#afterNodeInsertion(boolean) 中调用}
@@ -36,7 +38,7 @@ public class LRU<K, V> implements CustomCache<K, V> {
 	}
 
 	@Override
-	public V get(K k) {
+	public int get(int k) {
 		return cache.get(k);
 	}
 
@@ -46,7 +48,7 @@ public class LRU<K, V> implements CustomCache<K, V> {
 	}
 
 	@Override
-	public void put(K k, V v) {
+	public void put(int k,int v) {
 		cache.put(k, v);
 	}
 

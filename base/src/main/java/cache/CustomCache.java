@@ -4,23 +4,23 @@ package cache;
  * @author chen
  * @date 2021/9/25
  **/
-public interface CustomCache<K, V> {
+public interface CustomCache {
 
-	class FreqNode<K, V> {
+	class FreqNode {
 		long freq;
-		K k;
-		V v;
+		int k;
+		int v;
 
-		public FreqNode(long freq, K k, V v) {
+		public FreqNode(long freq, int k, int v) {
 			this.freq = freq;
 			this.k = k;
 			this.v = v;
 		}
 	}
 
-	V get(K k);
+	int get(int k);
 
 	int size();
 
-	void put(K k, V v);
+	void put(int k, int v);
 }
