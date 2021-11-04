@@ -1,7 +1,10 @@
 package mix;
 
+import com.sun.istack.internal.NotNull;
+
 import java.util.Arrays;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 压力测试，测试 TPS
@@ -11,29 +14,25 @@ import java.util.concurrent.*;
  **/
 public class Pressure {
 
-	private static final int NEW = 0;
-	private static final int RUNNING = 1;
-	private static final int SHUTDOWN = -1;
-
 	/**
-	 * 压测次数
+	 * 压测论次
 	 */
 	private volatile int round;
 
 	/**
 	 * 压测线程数
 	 */
-	private int threadCnt;
+	private final int threadCnt;
 
 	/**
 	 * 压测时间
 	 */
-	private long time;
+	private final long time;
 
 	/**
 	 * 压测事件单位
 	 */
-	private TimeUnit timeUnit;
+	private final TimeUnit timeUnit;
 
 	/**
 	 * success count
@@ -46,14 +45,9 @@ public class Pressure {
 	private long[] ec;
 
 	/**
-	 * 当前状态
-	 */
-	private volatile int status = NEW;
-
-	/**
 	 * 需要执行的任务
 	 */
-	private Runnable runnable;
+	private final Runnable runnable;
 
 	/**
 	 * 统计的时候需要所有线程都完成
@@ -68,11 +62,16 @@ public class Pressure {
 	/**
 	 * 定时任务
 	 */
-	private ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
+	private final ScheduledExecutorService scheduled = Executors.newSingleThreadScheduledExecutor();
 
+	private ExecutorService executor;
+
+	/**
+	 * 测试的工作线程
+	 */
 	class Worker implements Runnable {
 
-		private int id;
+		private final int id;
 
 		private int curr;
 
@@ -84,7 +83,7 @@ public class Pressure {
 		@Override
 		public void run() {
 			// 外层的状态正确
-			while (status == RUNNING) {
+			while (true) {
 				try {
 					// 等待
 					cb.await();
@@ -120,12 +119,19 @@ public class Pressure {
 		ec = new long[threadCnt];
 		cb = new CyclicBarrier(threadCnt + 1);
 		cdl = new CountDownLatch(threadCnt);
+		executor = Executors.newFixedThreadPool(threadCnt, new ThreadFactory() {
+			final AtomicInteger id = new AtomicInteger();
+
+			@Override
+			public Thread newThread(@NotNull Runnable r) {
+				return new Thread(r, "Worker-" + id.addAndGet(1));
+			}
+		});
 	}
 
 	public void start() throws BrokenBarrierException, InterruptedException {
-		status = RUNNING;
 		for (int i = 0; i < threadCnt; i++) {
-			new Thread(new Worker(i, round)).start();
+			executor.execute(new Worker(i, round));
 		}
 		while (round > 0) {
 			scheduled.schedule(() -> {
@@ -144,13 +150,16 @@ public class Pressure {
 			// 重新定义 CountDownLatch
 			cdl = new CountDownLatch(threadCnt);
 		}
-		status = SHUTDOWN;
+		executor.shutdownNow();
+		scheduled.shutdownNow();
+		System.out.println("测试结束 \n");
 	}
 
 	/**
 	 * 输出结果
 	 */
 	private void printRes() {
+		System.out.printf("第 %d 次测试 \n",round);
 		long s = 0, e = 0;
 		for (long cnt : sc) {
 			s += cnt;
@@ -158,12 +167,11 @@ public class Pressure {
 		for (long cnt : ec) {
 			e += cnt;
 		}
-		System.out.println("成功数量为:" + s);
-		System.out.println("失败数量为:" + e);
+		System.out.printf("成功数量为: %d,失败数量为: %d \n", s,e);
 	}
 
 	public static void main(String[] args) throws BrokenBarrierException, InterruptedException {
-		final Pressure testPressure = new Pressure(10, 10, 10, TimeUnit.SECONDS, () -> {
+		final Pressure testPressure = new Pressure(10, 10, 2, TimeUnit.SECONDS, () -> {
 			try {
 				TimeUnit.SECONDS.sleep(1);
 			} catch (InterruptedException e) {
