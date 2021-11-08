@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static common.Log.log;
+
 /**
  * 压力测试，测试 TPS
  *
@@ -152,14 +154,14 @@ public class Pressure {
 		}
 		executor.shutdownNow();
 		scheduled.shutdownNow();
-		System.out.println("测试结束 \n");
+		log("测试结束 \n");
 	}
 
 	/**
 	 * 输出结果
 	 */
 	private void printRes() {
-		System.out.printf("第 %d 次测试 \n",round);
+		log("第 %d 次测试 \n", round);
 		long s = 0, e = 0;
 		for (long cnt : sc) {
 			s += cnt;
@@ -167,7 +169,7 @@ public class Pressure {
 		for (long cnt : ec) {
 			e += cnt;
 		}
-		System.out.printf("成功数量为: %d,失败数量为: %d \n", s,e);
+		log("成功数量为: %d,失败数量为: %d \n", s, e);
 	}
 
 	public static void main(String[] args) throws BrokenBarrierException, InterruptedException {

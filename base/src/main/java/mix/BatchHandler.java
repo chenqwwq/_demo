@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static common.Log.log;
+
 /**
  * 批量操作的处理
  *
@@ -63,14 +65,12 @@ public abstract class BatchHandler<T> {
 		@Override
 		public void run() {
 			final long elapsed = stopwatch.elapsed(intervalUnit);
+			log("任务到期，当前相对时钟为 %d\n", elapsed);
 			// 超过时间
 			if (elapsed - pc >= interval) {
-				handle();
-				scheduledExecutorService.schedule(this, interval, intervalUnit);
-				pc = elapsed;
-			} else {
-				scheduledExecutorService.schedule(this, interval, intervalUnit);
+				handle(elapsed);
 			}
+			scheduledExecutorService.schedule(this, interval, intervalUnit);
 		}
 	}
 
@@ -80,6 +80,7 @@ public abstract class BatchHandler<T> {
 	}
 
 	public void add(T t) {
+		log("添加元素 %s \n", t);
 		blockingQueue.add(t);
 		if (blockingQueue.size() >= threshold) {
 			handle();
@@ -95,8 +96,8 @@ public abstract class BatchHandler<T> {
 		blockingQueue.drainTo(actions);
 		if (!actions.isEmpty()) {
 			handle(actions);
+			this.pc = curr;
 		}
-		this.pc = curr;
 	}
 
 	/**
