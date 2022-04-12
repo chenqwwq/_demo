@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/base/base.iml" filepath="$PROJECT_DIR$/base/base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/es_demo/es_demo.iml" filepath="$PROJECT_DIR$/es_demo/es_demo.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/incubator.iml" filepath="$PROJECT_DIR$/.idea/incubator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/springboot-starter-data-eventbus/springboot-starter-data-eventbus.iml" filepath="$PROJECT_DIR$/springboot-starter-data-eventbus/springboot-starter-data-eventbus.iml" />
     </modules>
   </component>
 </project>
